@@ -26,9 +26,6 @@ SECRET_KEY = 'django-insecure-bvqm*t6u^$(rv2-iu4e+f&d0re7wz%kw@#0!ww%r!+y&*%1hx_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,8 +41,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
 
-    "apps.chat_bot",
-    "apps.authentication",
+    "modules.authentication",
 ]
 
 MIDDLEWARE = [
@@ -80,6 +76,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'learning_chatbot.wsgi.application'
 
+# Library and Dependencies
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "LearningChatbot API",
+    "DESCRIPTION": "Authentication and chatbot endpoints",
+    "VERSION": "1.0.0",
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -159,27 +169,31 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Trusted Origin
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
+# ───── Django basics ─────
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = (
+    os.getenv("DJANGO_ALLOWED_HOSTS", "")
+    .split(",") if os.getenv("DJANGO_ALLOWED_HOSTS") else []
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://sizopi-production.up.railway.app",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://10.0.2.2:8000",
-]
+# ───── CORS / CSRF ─────
+CORS_ALLOWED_ORIGINS = (
+    os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "")
+    .split(",") if os.getenv("DJANGO_CORS_ALLOWED_ORIGINS") else []
+)
+# CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_CREDENTIALS = True
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SAMESITE = 'None'
+# SESSION_COOKIE_SAMESITE = 'None'
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://sizopi-production.up.railway.app",
+#     "http://localhost:8000",
+#     "http://127.0.0.1:8000",
+#     "http://10.0.2.2:8000",
+# ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-
-
-# Library and Dependencies
-REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-}
