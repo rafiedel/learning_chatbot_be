@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
-from modules.authentication.application.services.user_service import UserService
-from modules.authentication.interface.serializers.user_serializer import RegisterSerializer, LoginSerializer
+from authentication.services import UserService
+from authentication.serializers import RegisterSerializer, LoginSerializer
 
 class UserRegisterView(APIView):
     http_method_names  = ['post']  

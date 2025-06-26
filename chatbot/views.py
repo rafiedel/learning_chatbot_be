@@ -8,13 +8,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema
-from modules.chatbot.infrastructure.models.chat_message_model import ChatSession, ChatMessage
-from modules.chatbot.interface.serializers.serializers import (
+from chatbot.models import ChatMessage, ChatSession
+from chatbot.serializers import (
     ChatRequestSerializer, ChatResponseSerializer,
     ChatSessionSerializer, ChatMessageSerializer, ChatSessionTitleSerializer
 )
-from modules.chatbot.interface.pagination import ChatSessionPagination, ChatMessagePagination
-from modules.chatbot.application.services.chat_service import ChatService
+from chatbot.services import ChatService
+from utils.paginator import BigPagination, SmallPagination
 
 
 class LenientJSONParser(JSONParser):
@@ -62,7 +62,7 @@ class ChatCompletionView(APIView):
 class ChatSessionListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = ChatSessionSerializer
-    pagination_class   = ChatSessionPagination
+    pagination_class   = BigPagination
     http_method_names  = ['get']  
 
     def get_queryset(self):
@@ -90,7 +90,7 @@ class ChatSessionDeleteView(generics.DestroyAPIView):
 class ChatMessageListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = ChatMessageSerializer
-    pagination_class   = ChatMessagePagination
+    pagination_class   = SmallPagination
     http_method_names  = ['get']
 
     def get_queryset(self):
@@ -99,7 +99,7 @@ class ChatMessageListView(generics.ListAPIView):
 class ChatMessageListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = ChatMessageSerializer
-    pagination_class   = ChatMessagePagination
+    pagination_class   = SmallPagination
 
     def get_queryset(self):
         session_id = self.kwargs.get('session_id')

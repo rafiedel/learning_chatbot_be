@@ -1,1 +1,35 @@
-When considering an animal \"safe to be petted,\" it's crucial to understand that **safety is highly dependent on the individual animal's temperament, training, socialization, and the specific circumstances.** No animal is *universally* safe, and even typically docile animals can bite or scratch if startled, scared, or in pain.\n\nHowever, generally speaking, the following domesticated animals are often considered safe for petting under the right conditions:\n\n### Commonly Safe Animals (with caveats):\n\n1.  **Dogs:**\n    *   **Safest:** Well-socialized, friendly, and familiar dogs, especially those that have been trained for human interaction (e.g., therapy dogs, family pets known to be gentle).\n    *   **Caveats:** Never approach an unfamiliar dog without the owner's permission. Watch for signs of aggression, fear, or discomfort (growling, baring teeth, tail tucked, rigid body, avoiding eye contact). Some breeds may have a stronger prey drive or protective instincts.\n\n2.  **Cats:**\n    *   **Safest:** Cats that are familiar with you, seek out affection, and show clear signs of enjoyment (purring, rubbing against you, slow blinking).\n    *   **Caveats:** Cats are more independent than dogs and often prefer petting on *their* terms. Watch for signs of overstimulation or annoyance (tail lashing, ears flattened, skin twitching, sudden stillness, swatting). Avoid forcing interaction.\n\n3.  **Rabbits:**\n    *   **Safest:** Pet rabbits that are accustomed to human handling. Many enjoy gentle petting on their head and back.\n    *   **Caveats:** Rabbits are prey animals and can be easily startled or stressed. Their spines are delicate, so handling them incorrectly can cause injury to the rabbit. They can kick powerfully or bite if scared.\n\n4.  **Guinea Pigs:**\n    *   **Safest:** Generally docile and less prone to biting than some other small rodents. They often enjoy gentle petting and can be quite vocal in their pleasure.\n    *   **Caveats:** Still fragile and can be startled. Handle gently and support their entire body.\n\n5.  **Hamsters/Gerbils:**\n    *   **Safest:** Small and cute, but often more for supervised interaction than extensive petting. Some individuals can become quite tame.\n    *   **Caveats:** They are very small and fragile. They can move quickly and are easily startled, leading to nips or bites if they feel threatened or confused. Hamsters are often nocturnal and may be grumpy if woken.\n\n6.  **Ferrets:**\n    *   **Safest:** Playful and intelligent animals that can bond with humans. Many enjoy interactive play and scritches.\n    *   **Caveats:** They are very energetic and can nip if they haven't been properly trained or socialized. Their play can sometimes involve nipping that feels like a bite.\n\n### Animals in Special Circumstances:\n\n*   **Therapy Animals:** These animals (most commonly dogs, but sometimes cats, rabbits, or even miniature horses) are specially selected, trained, and certified for their calm temperament and ability to interact gently with a wide range of people, often in hospitals or care homes.\n*   **Farm Animals (in supervised settings):** Animals like goats, sheep, miniature horses, or alpacas found in petting zoos or on specific farm tours may be accustomed to human interaction and safe to pet *under strict supervision and guidance from staff*. Never approach farm animals in the wild or on private property without permission.\n\n### Crucial Safety Guidelines for Petting *Any* Animal:\n\n1.  **Always Ask Permission:** If the animal has an owner, always ask if it's okay to pet their animal.\n2.  **Observe Body Language:** Learn to read signs of comfort (relaxed posture, soft eyes, gentle tail wag in dogs, purring in cats) and discomfort/fear/aggression (stiff body, tucked tail, flattened ears, growling, hissing, baring teeth, wide eyes, lip licking). If you see any signs of discomfort, do NOT pet.\n3.  **Approach Slowly and Calmly:** Avoid sudden movements or loud noises that could startle the animal.\n4.  **Let the Animal Come to You:** Offer a hand (palm down, fingers curled slightly) and let the animal sniff it first. If they lean in or seem interested, you can proceed.\n5.  **Pet Gently in Safe Areas:** Most animals prefer being petted on the chest, shoulders, or behind the ears. Avoid sensitive areas like the top of the head (for dogs, initially), tail, paws, or belly unless the animal explicitly invites it.\n6.  **Supervise Children:** Children should always be supervised when interacting with animals, as they may not understand boundaries or subtle animal cues. Teach them how to interact gently and respectfully.\n7.  **Wash Your Hands:** Always wash your hands thoroughly with soap and water after petting any animal to prevent the spread of germs.\n8.  **Never Pet a Wild Animal:** Wild animals, even if they appear friendly, are unpredictable and can carry diseases. Keep your distance.\n9.  **Avoid Sick or Injured Animals:** Do not approach or pet an animal that appears sick, injured, or is behaving unusually.\n\nUltimately, the safest animal to pet is one that you know well, is accustomed to human interaction, and whose owner assures you it's friendly, combined with your own careful observation and respectful approach.
+# Learning Chatbot BE
+
+_with_ **Django**
+
+## Clean Architecture
+
+```text
+app/
+├── apps.py              
+├── admin.py             
+├── entities.py          
+├── repositories.py      
+├── models.py           
+├── serializers.py   
+├── services.py     
+├── views.py           
+├── urls.py             
+└── tests.py 
+```
+
+This diagram shows that the app is using clean architecture pattern:
+- entities.py defines pure business data structures.
+- models.py defines ORM tables.
+- repositories.py maps between models and entities.
+- services.py orchestrates domain logic and external clients.
+- views.py handles HTTP requests, delegating to services.
+- urls.py routes endpoints to views.
+
+```text
+E --> R
+M --> R
+R --> S
+S --> V
+V --> U
+```

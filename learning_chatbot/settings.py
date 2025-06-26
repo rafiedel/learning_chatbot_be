@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
 
-    "modules.authentication",
-    "modules.chatbot",
+    "authentication",
+    "chatbot",
 ]
 
 MIDDLEWARE = [

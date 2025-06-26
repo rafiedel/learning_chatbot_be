@@ -1,6 +1,9 @@
-from modules.chatbot.infrastructure.gemini_client import GeminiClient
-from modules.chatbot.infrastructure.imgbb_api import upload_image
-from modules.chatbot.infrastructure.models.chat_message_model import ChatSession, ChatMessage
+
+
+from chatbot.models import ChatMessage, ChatSession
+from clients.gemini_client import GeminiClient
+from clients.imgbb_client import IMGBBClient
+
 
 class ChatService:
     @staticmethod
@@ -36,7 +39,7 @@ class ChatService:
 
         # Upload user image to imgbb and record URL
         if image:
-            url = upload_image(image)
+            url = IMGBBClient.upload_image(image)
             session.image_urls.append(url)
             session.save()
 

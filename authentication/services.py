@@ -1,6 +1,6 @@
-from modules.authentication.domain.entities.user_entitiy import UserEntity
-from modules.authentication.infrastructure.token_provider import TokenProvider
-from modules.authentication.infrastructure.repositories.user_repository import UserRepository
+from authentication.entities import UserEntity
+from utils.token_provider import TokenProvider
+from authentication.repositories import UserRepository
 
 class UserService:
     def __init__(

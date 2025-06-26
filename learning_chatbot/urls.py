@@ -30,8 +30,8 @@ urlpatterns = [
         name="swagger-ui",
     ),
     # Auth Module
-    path("auth/", include("modules.authentication.interface.urls")),
+    path("auth/", include("authentication.urls")),
     # Chatbot Module
-    path("chatbot/", include("modules.chatbot.urls")),
+    path("chatbot/", include("chatbot.urls")),
 
 ]

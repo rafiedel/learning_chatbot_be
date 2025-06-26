@@ -1,5 +1,5 @@
 from django.urls import path
-from .views.views import *
+from .views import *
 
 urlpatterns = [
     path("chat/completions/", ChatCompletionView.as_view(), name="chat-completions"),
