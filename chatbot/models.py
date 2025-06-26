@@ -8,7 +8,6 @@ class ChatSession(models.Model):
     owner       = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="chat_sessions"
     )
-    image_urls  = models.JSONField(default=list, blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -23,7 +22,7 @@ class ChatMessage(models.Model):
     )
     role        = models.CharField(max_length=10, choices=ROLE_CHOICES)
     content     = models.TextField(blank=True)
-    image_data  = models.TextField(blank=True)  # base64 if image
+    image_url  = models.TextField(blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

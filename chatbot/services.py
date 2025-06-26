@@ -1,55 +1,68 @@
-
-
-from chatbot.models import ChatMessage, ChatSession
+from typing import Any, List
+import base64
 from clients.gemini_client import GeminiClient
 from clients.imgbb_client import IMGBBClient
+from .entities import Message, ChatThread
+from .repositories import DjangoChatRepository
 
 
 class ChatService:
-    @staticmethod
-    def _history(session: ChatSession) -> list[dict]:
-        msgs = session.messages.order_by('created_at')
-        history = []
-        for m in msgs:
-            entry = {"role": m.role}
-            if m.content:
-                entry["text"] = m.content
-            if m.image_data:
-                entry["image"] = {"mimeType": "", "data": m.image_data}
-            history.append(entry)
-        return history
+    def __init__(self, repo: DjangoChatRepository | None = None):
+        self.repo = repo or DjangoChatRepository()
 
-    @staticmethod
-    def send_and_store(session: ChatSession, message: str = None, image: str = None) -> dict:
-        # Save user input
-        if image:
-            ChatMessage.objects.create(
-                session=session, role="user", image_data=image
-            )
-        else:
-            ChatMessage.objects.create(
-                session=session, role="user", content=message
-            )
+    def _to_gemini_format(self, content: str, image_data=None) -> List[dict[str, Any]]:
+        payload = [{"role": "user", "text": content}]
+        if image_data:
+            try:
+                mime_type = image_data.content_type
+                base64_str = base64.b64encode(image_data.read()).decode("utf-8")
+                payload.append({
+                    "role": "user",
+                    "image": {
+                        "mimeType": mime_type,
+                        "data": base64_str,
+                    },
+                })
+            except Exception as e:
+                print(f"Failed to prepare image for Gemini: {e}")
+        return payload
 
-        # Build full history
-        history = ChatService._history(session)
+    def send_message(
+        self,
+        *,
+        session_id: int | None,
+        owner,
+        content: str,
+        image_data = None,
+    ) -> dict[str, Any]:
+        # 1) Call Gemini first using user message + image (if any)
+        formatted = self._to_gemini_format(content, image_data)
+        reply = GeminiClient.chat(formatted)
+        
+        # 2) Find or create session
+        thread = self.repo.get_or_create_thread(owner, session_id=session_id)
 
-        # Send to Gemini
-        reply = GeminiClient.chat(history)
+        # 3) Save user message
+        message_id = self.repo.add_user_message(thread.id, content=content)
 
-        # Upload user image to imgbb and record URL
-        if image:
-            url = IMGBBClient.upload_image(image)
-            session.image_urls.append(url)
-            session.save()
+        # 4) Optional: upload image to IMGBB and store URL
+        if image_data:
+            try:
+                base64_str = ""
+                for msg in formatted:
+                    if "image" in msg:
+                        base64_str = msg["image"]["data"]
+                        break
+                url = IMGBBClient.upload_image(base64_str)
+                self.repo.append_image_url(message_id, url)
+            except Exception as e:
+                print(f"Image upload failed: {e}")
 
-        # Save assistant reply
-        ChatMessage.objects.create(
-            session=session, role=reply["role"], content=reply.get("content","")
-        )
+        # 5) Save assistant message
+        self.repo.add_assistant_message(thread.id, content=reply.get("content", ""))
 
         return {
-            "role": reply["role"],
-            "content": reply.get("content",""),
-            "image_urls": session.image_urls,
+            "session_id": thread.id,
+            "role": reply.get("role", "assistant"),
+            "content": reply.get("content", ""),
         }

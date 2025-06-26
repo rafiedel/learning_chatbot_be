@@ -14,24 +14,26 @@ class GeminiClient:
             - {'role': 'user'|'assistant', 'image': {'mimeType': str, 'data': base64_str}}
         """
         # Build contents list for generate_content
-        contents = []
-        for msg in messages:
-            # Text part
-            if msg.get('text'):
-                contents.append(msg['text'])
-            # Image part
-            if msg.get('image'):
-                img = msg['image']
-                contents.append({
-                    'mime_type': img.get('mimeType', ''),
-                    'data': img.get('data', '')
-                })
-        if not contents:
-            raise ValueError("No content to send to Gemini")
-
-        # Initialize model
-        model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-        model = genai.GenerativeModel(model_name)
-        # Send contents list as expected by SDK
-        response = model.generate_content(contents=contents)
-        return {"role": "assistant", "content": response.text}
+        try:
+            contents = []
+            for msg in messages:
+                # Text part
+                if msg.get('text'):
+                    contents.append(msg['text'])
+                # Image part
+                if msg.get('image'):
+                    img = msg['image']
+                    contents.append({
+                        'mime_type': img.get('mimeType', ''),
+                        'data': img.get('data', '')
+                    })
+            if not contents:
+                raise ValueError("No content to send to Gemini")
+            # Initialize model
+            model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            model = genai.GenerativeModel(model_name)
+            # Send contents list as expected by SDK
+            response = model.generate_content(contents=contents)
+            return {"role": "assistant", "content": response.text}
+        except Exception as e :
+            print(e)

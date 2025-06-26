@@ -1,106 +1,78 @@
-import re
-import json
-from django.utils.text import Truncator
-from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from dataclasses import asdict
 from drf_spectacular.utils import extend_schema
-from chatbot.models import ChatMessage, ChatSession
-from chatbot.serializers import (
-    ChatRequestSerializer, ChatResponseSerializer,
-    ChatSessionSerializer, ChatMessageSerializer, ChatSessionTitleSerializer
-)
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from chatbot.serializers import *
 from chatbot.services import ChatService
-from utils.paginator import BigPagination, SmallPagination
+from utils.wierd_json_parser import LenientJSONParser
+from .repositories import DjangoChatRepository
 
-
-class LenientJSONParser(JSONParser):
-    """
-    JSON parser that strips trailing commas before loading.
-    """
-    def parse(self, stream, media_type=None, parser_context=None):
-        raw = stream.read().decode('utf-8')
-        cleaned = re.sub(r',\s*}', '}', raw)
-        cleaned = re.sub(r',\s*\]', ']', cleaned)
-        return json.loads(cleaned)
 
 class ChatCompletionView(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes     = [MultiPartParser, FormParser, LenientJSONParser]
-    http_method_names  = ['post']  
+    parser_classes = [MultiPartParser, FormParser]
+    http_method_names = ["post"]
 
-    @extend_schema(request=ChatRequestSerializer, responses={200: ChatResponseSerializer})
+    @extend_schema(request=CompletionIn, responses={200: dict})
     def post(self, request):
-        ser = ChatRequestSerializer(data=request.data)
+        flat_data = {k: v[0] if isinstance(v, list) else v for k, v in request.data.lists()}
+        ser = CompletionIn(data=flat_data)
         ser.is_valid(raise_exception=True)
-        sess_id = ser.validated_data.get("session_id")
-        message = ser.validated_data.get("message")
-        image   = ser.validated_data.get("image")
 
-        if sess_id is None:
-            session = ChatSession.objects.create(
-                owner=request.user,
-                title=Truncator(message or "[image]").chars(40)
-            )
-        else:
-            try:
-                session = ChatSession.objects.get(id=sess_id, owner=request.user)
-            except ChatSession.DoesNotExist:
-                raise ValidationError({"session_id": "Chat session not found"})
+        svc = ChatService()
+        reply = svc.send_message(owner=request.user, **ser.validated_data)
+        return Response(reply, status=status.HTTP_200_OK)
 
-        try:
-            reply = ChatService.send_and_store(session, message, image)
-        except Exception as e:
-            print("💥 ChatService error →", e)
-            raise ValidationError({"detail": str(e)})
+class ChatSessionListView(APIView):
+    http_method_names = ["get"]
 
-        return Response({"session_id": session.id, **reply})
+    @extend_schema(parameters=[SessionQuery], responses={200: list})
+    def get(self, request):
+        q = SessionQuery(data=request.query_params)
+        q.is_valid(raise_exception=True)
+        repo = DjangoChatRepository()
+        sessions, total = repo.list_threads(
+            request.user,
+            title_filter=q.validated_data.get("title"),
+            page=q.validated_data.get("page", 1),
+        )
+        return Response({"results": [asdict(s) for s in sessions], "total_pages": total})
 
-class ChatSessionListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class   = ChatSessionSerializer
-    pagination_class   = BigPagination
-    http_method_names  = ['get']  
 
-    def get_queryset(self):
-        qs = ChatSession.objects.filter(owner=self.request.user)
-        title = self.request.query_params.get("title")
-        if title is not None:
-            return qs.filter(title__icontains=title)
-        return qs
+class ChatSessionRenameView(APIView):
+    http_method_names = ["patch"]
 
-class ChatSessionUpdateTitleView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class   = ChatSessionTitleSerializer
-    http_method_names  = ['put']  
+    @extend_schema(request=RenameIn, responses={204: None})
+    def patch(self, request, session_id: int):
+        data = RenameIn(data=request.data)
+        data.is_valid(raise_exception=True)
+        DjangoChatRepository().update_thread_title(
+            session_id, request.user, new_title=data.validated_data["title"]
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_queryset(self):
-        return ChatSession.objects.filter(owner=self.request.user)
 
-class ChatSessionDeleteView(generics.DestroyAPIView):
-    permission_classes  = [IsAuthenticated]
-    http_method_names   = ['delete']
+class ChatSessionDeleteView(APIView):
+    http_method_names = ["delete"]
 
-    def get_queryset(self):
-        return ChatSession.objects.filter(owner=self.request.user)
+    def delete(self, request, session_id: int):
+        DjangoChatRepository().delete_thread(session_id, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-class ChatMessageListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class   = ChatMessageSerializer
-    pagination_class   = SmallPagination
-    http_method_names  = ['get']
 
-    def get_queryset(self):
-        session_id = self.kwargs.get('session_id')
-        return ChatMessage.objects.filter(session_id=session_id).order_by('created_at')
-class ChatMessageListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class   = ChatMessageSerializer
-    pagination_class   = SmallPagination
+class ChatMessageListView(APIView):
+    http_method_names = ["get"]
 
-    def get_queryset(self):
-        session_id = self.kwargs.get('session_id')
-        return ChatMessage.objects.filter(session_id=session_id).order_by('created_at')
+    @extend_schema(parameters=[MessagesQuery], responses={200: list})
+    def get(self, request):
+        q = MessagesQuery(data=request.query_params)
+        q.is_valid(raise_exception=True)
+        repo = DjangoChatRepository()
+        msgs, total = repo.list_messages(
+            q.validated_data["session_id"],
+            request.user,
+            page=q.validated_data.get("page", 1),
+        )
+        return Response({"results": [asdict(m) for m in msgs], "total_pages": total})
