@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from modules.chatbot.models import ChatSession, ChatMessage
+from modules.chatbot.infrastructure.models.chat_message_model import ChatSession, ChatMessage
 
 class ChatRequestSerializer(serializers.Serializer):
     session_id = serializers.IntegerField(required=False, allow_null=True)

@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 @dataclass
-class User:
+class UserEntity:
     id: Optional[UUID]
     username: str
     email: str

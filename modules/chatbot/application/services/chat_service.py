@@ -1,6 +1,6 @@
-from modules.chatbot.infrastructure.gemini_api import GeminiClient
+from modules.chatbot.infrastructure.gemini_client import GeminiClient
 from modules.chatbot.infrastructure.imgbb_api import upload_image
-from modules.chatbot.models import ChatSession, ChatMessage
+from modules.chatbot.infrastructure.models.chat_message_model import ChatSession, ChatMessage
 
 class ChatService:
     @staticmethod
