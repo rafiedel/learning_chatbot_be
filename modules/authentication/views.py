@@ -6,6 +6,7 @@ from .serializers import RegisterSerializer, LoginSerializer
 from .application.user_service import UserService
 
 class RegisterView(APIView):
+    http_method_names  = ['post']  
     @extend_schema(request=RegisterSerializer, responses={201: RegisterSerializer})
     def post(self, request):
         ser = RegisterSerializer(data=request.data)
@@ -17,9 +18,9 @@ class RegisterView(APIView):
         )
 
 class LoginView(APIView):
+    http_method_names  = ['post']  
     @extend_schema(request=LoginSerializer, responses={200: dict})
     def post(self, request):
-        print("kucing")
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         tokens = UserService.authenticate_and_get_tokens(**ser.validated_data)

@@ -16,3 +16,4 @@ drf_spectacular
 pillow 
 djangorestframework-simplejwt
 httpx
+google-generativeai

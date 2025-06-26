@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "corsheaders",
 
     "modules.authentication",
+    "modules.chatbot",
 ]
 
 MIDDLEWARE = [

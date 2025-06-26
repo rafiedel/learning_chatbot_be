@@ -29,7 +29,9 @@ urlpatterns = [
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
-    # Auth module
+    # Auth Module
     path("auth/", include("modules.authentication.urls")),
+    # Chatbot Module
+    path("chatbot/", include("modules.chatbot.urls")),
 
 ]
