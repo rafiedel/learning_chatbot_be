@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
 
+    "learning_chatbot",
     "authentication",
     "chatbot",
 ]

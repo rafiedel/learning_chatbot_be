@@ -4,11 +4,14 @@ from typing import List
 
 @dataclass(frozen=True)
 class Message:
+    id: int
     role: str          # "user" / "assistant"
     content: str
     timestamp: datetime
+    image_url: str
 
 @dataclass
 class ChatThread:
     id: int
-    messages: List[Message]
+    title: str
+    created_at: datetime

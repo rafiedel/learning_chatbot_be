@@ -102,21 +102,42 @@ class DjangoChatRepository(ChatRepository):
         ChatSession.objects.filter(pk=session_id, owner=owner).delete()
 
     # ---------- list messages ----------
-    def list_messages(self, session_id, owner, *, page=1, page_size=20):
-        qs = ChatMessage.objects.filter(session_id=session_id, session__owner=owner).order_by("created_at")
-        pages = Paginator(qs, page_size)
-        try:
-            page_obj = pages.page(page)
-        except EmptyPage:
-            page_obj = pages.page(pages.num_pages)
-        msgs = [Message(role=m.role, content=m.content or "", timestamp=m.created_at) for m in page_obj]
-        return msgs, pages.num_pages
+    def list_messages(self, session_id, owner, *, before_id=None, page_size=10):
+        qs = ChatMessage.objects.filter(
+            session_id=session_id,
+            session__owner=owner,
+        )
+
+        # If before_id provided, only get messages older than that message
+        if before_id:
+            try:
+                before_msg = qs.get(id=before_id)
+            except ChatMessage.DoesNotExist:
+                raise ValueError("Invalid before_id")
+            qs = qs.filter(created_at__lt=before_msg.created_at)
+
+        # Always order descending (newest first)
+        qs = qs.order_by("-created_at")[:page_size]
+
+        # We re-reverse so the frontend gets oldest->newest for appending
+        msgs = [
+            Message(
+                id=m.id,
+                role=m.role,
+                content=m.content or "",
+                timestamp=m.created_at,
+                image_url=m.image_url
+            )
+            for m in reversed(qs)
+        ]
+        return msgs
+
 
     # ---------- helpers ----------
     def _to_entity(self, s: ChatSession) -> ChatThread:
-        msgs = [Message(role=m.role, content=m.content or "", timestamp=m.created_at)
+        msgs = [Message(id=m.id,role=m.role, content=m.content or "", timestamp=m.created_at, image_url=m.image_url)
                 for m in s.messages.order_by("created_at")]
-        return ChatThread(id=s.id, messages=msgs)
+        return ChatThread(id=s.id, title=s.title , created_at=s.created_at)
 
     # unchanged ↓
     def add_user_message(self, session_id, *, content=""):
@@ -124,9 +145,20 @@ class DjangoChatRepository(ChatRepository):
         return s.id
 
     def add_assistant_message(self, session_id, *, content):
-        ChatMessage.objects.create(session_id=session_id, role="assistant", content=content)
+        s = ChatMessage.objects.create(session_id=session_id, role="assistant", content=content)
+        return s.id
 
     def append_image_url(self, message_id, url):
         s = ChatMessage.objects.get(pk=message_id)
         s.image_url = url
         s.save()
+
+    def get_message(self, message_id) -> Message:
+        m = ChatMessage.objects.get(id=message_id)
+        return Message(
+            id=m.id,
+            role=m.role,
+            content=m.content or "",
+            timestamp=m.created_at,
+            image_url=m.image_url
+        )

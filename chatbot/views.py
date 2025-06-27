@@ -69,10 +69,14 @@ class ChatMessageListView(APIView):
     def get(self, request):
         q = MessagesQuery(data=request.query_params)
         q.is_valid(raise_exception=True)
+
         repo = DjangoChatRepository()
-        msgs, total = repo.list_messages(
+        msgs = repo.list_messages(
             q.validated_data["session_id"],
             request.user,
-            page=q.validated_data.get("page", 1),
+            before_id=q.validated_data.get("before_id")
         )
-        return Response({"results": [asdict(m) for m in msgs], "total_pages": total})
+
+        return Response({
+            "results": [asdict(m) for m in msgs]
+        })

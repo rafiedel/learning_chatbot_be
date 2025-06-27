@@ -1,7 +1,8 @@
+from dataclasses import asdict
 from typing import Any, List
 import base64
 from clients.gemini_client import GeminiClient
-from clients.imgbb_client import IMGBBClient
+from clients.imgur_client import ImgurClient
 from .entities import Message, ChatThread
 from .repositories import DjangoChatRepository
 
@@ -48,21 +49,26 @@ class ChatService:
         # 4) Optional: upload image to IMGBB and store URL
         if image_data:
             try:
-                base64_str = ""
-                for msg in formatted:
-                    if "image" in msg:
-                        base64_str = msg["image"]["data"]
-                        break
-                url = IMGBBClient.upload_image(base64_str)
+                image_data.seek(0)  # Reset pointer
+                image_bytes = image_data.read()
+                url = ImgurClient.upload_image_from_bytes(image_bytes)
                 self.repo.append_image_url(message_id, url)
             except Exception as e:
                 print(f"Image upload failed: {e}")
 
+
         # 5) Save assistant message
-        self.repo.add_assistant_message(thread.id, content=reply.get("content", ""))
+        assistant_id = self.repo.add_assistant_message(thread.id, content=reply.get("content", ""))
+
+        user_message = self.repo.get_message(message_id)
+        assistant_message = self.repo.get_message(assistant_id)
 
         return {
-            "session_id": thread.id,
-            "role": reply.get("role", "assistant"),
-            "content": reply.get("content", ""),
+            "session": {
+                "id": thread.id,
+                "title": thread.title,
+                "created_at": thread.created_at,
+            },
+            "user_message": asdict(user_message),
+            "assistant_message": asdict(assistant_message),
         }

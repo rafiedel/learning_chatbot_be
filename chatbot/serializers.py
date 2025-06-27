@@ -52,4 +52,4 @@ class RenameIn(serializers.Serializer):
 
 class MessagesQuery(serializers.Serializer):
     session_id = SVIntegerField()
-    page       = SVIntegerField(required=False, min_value=1, default=1)
+    before_id  = SVIntegerField(required=False)
