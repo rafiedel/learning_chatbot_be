@@ -44,7 +44,7 @@ class CompletionIn(serializers.Serializer):
     image_data = SVImageField(required=False, allow_null=True, allow_empty_file=True)
 
 class SessionQuery(serializers.Serializer):
-    page  = SVIntegerField(required=False, min_value=1, default=1)
+    before_id = SVIntegerField(required=False)
     title = SVCharField(required=False, allow_blank=True)
 
 class RenameIn(serializers.Serializer):

@@ -41,7 +41,7 @@ class ChatService:
         reply = GeminiClient.chat(formatted)
         
         # 2) Find or create session
-        thread = self.repo.get_or_create_thread(owner, session_id=session_id)
+        thread = self.repo.get_or_create_thread(owner, session_id=session_id, title=content)
 
         # 3) Save user message
         message_id = self.repo.add_user_message(thread.id, content=content)

@@ -72,6 +72,7 @@ class ChatRepository(ABC):
 class DjangoChatRepository(ChatRepository):
     # ---------- completions ----------
     def get_or_create_thread(self, owner, *, session_id, title=None):
+        print(session_id)
         if session_id:
             try:
                 s = ChatSession.objects.get(pk=session_id, owner=owner)
@@ -82,16 +83,30 @@ class DjangoChatRepository(ChatRepository):
         return self._to_entity(s)
 
     # ---------- list sessions ----------
-    def list_threads(self, owner, *, title_filter=None, page=1, page_size=20):
+    def list_threads(self, owner, *, title_filter=None, before_id=None, page_size=20):
         qs = ChatSession.objects.filter(owner=owner)
+
         if title_filter:
             qs = qs.filter(title__icontains=title_filter)
-        pages = Paginator(qs.order_by("-created_at"), page_size)
-        try:
-            page_obj = pages.page(page)
-        except EmptyPage:
-            page_obj = pages.page(pages.num_pages)
-        return [self._to_entity(s) for s in page_obj], pages.num_pages
+
+        if before_id:
+            try:
+                before_session = qs.get(id=before_id)
+            except ChatSession.DoesNotExist:
+                return []
+
+            qs = qs.filter(id__lt=before_session.id)
+
+        # Order by ID descending (latest ID first)
+        qs = qs.order_by("-id")[:page_size]
+
+        sessions = [
+            self._to_entity(s)
+            for s in qs
+        ]
+
+        return sessions
+
 
     # ---------- update title ----------
     def update_thread_title(self, session_id, owner, *, new_title):
@@ -135,8 +150,6 @@ class DjangoChatRepository(ChatRepository):
 
     # ---------- helpers ----------
     def _to_entity(self, s: ChatSession) -> ChatThread:
-        msgs = [Message(id=m.id,role=m.role, content=m.content or "", timestamp=m.created_at, image_url=m.image_url)
-                for m in s.messages.order_by("created_at")]
         return ChatThread(id=s.id, title=s.title , created_at=s.created_at)
 
     # unchanged ↓
