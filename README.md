@@ -1,5 +1,9 @@
 # Learning Chatbot BE
 
+# URL Deployment
+BASEURL : https://learningchatbotbe-production.up.railway.app/
+SWAGGER : https://learningchatbotbe-production.up.railway.app/api/docs/
+
 _with_ **Django**
 
 ## Clean Architecture
