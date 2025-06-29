@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from typing import Any, List
 import base64
-from chatbot.models import ChatSummarize
+from chatbot.models import ChatMessage, ChatSummarize
 from clients.gemini_client import GeminiClient
 from clients.imgur_client import ImgurClient
 from .entities import Message, ChatThread
@@ -47,18 +47,25 @@ class ChatService:
     ) -> dict[str, Any]:
         final_prompt = INTRODUCTION + "\n\n Question:\n" + content
         if session_id and session_id != 0:
-            summaries = ChatSummarize.objects.filter(session_id=session_id).order_by("created_at")
-            summary_texts = "\n\n".join(f"- {s.content}" for s in summaries)
-            if summary_texts:
+            messages = ChatMessage.objects.filter(session_id=session_id).order_by("created_at")
+            conversation_history = "\n".join(
+                f"{m.role}: {m.content}"
+                for m in messages
+            )
+            if conversation_history:
                 final_prompt = f"""
 {INTRODUCTION}
 
-You have had previous conversations with this user. Here is the summary of those interactions:
-{summary_texts}
+You have had previous conversations with this user. Here is the full transcript:
+
+{conversation_history}
 
 Now, the next question is:
 {content}
 """
+                
+                print(final_prompt)
+
 
         # 1) Call Gemini first using user message + image (if any)
         formatted = self._to_gemini_format(final_prompt, image_data)

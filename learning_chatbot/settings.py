@@ -197,9 +197,11 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 # Celery (Pararel Function Execution)
 
-CELERY_BROKER_URL = os.getenv("REDIS_URL", "")
-CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "")
+CELERY_BROKER_URL = "redis://default:qnfXX9FsNDIpfqyut0aDKJv8UF3Gx5ym@redis-16858.c323.us-east-1-2.ec2.redns.redis-cloud.com:16858"
+CELERY_RESULT_BACKEND = "redis://default:qnfXX9FsNDIpfqyut0aDKJv8UF3Gx5ym@redis-16858.c323.us-east-1-2.ec2.redns.redis-cloud.com:16858"
+
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
+
