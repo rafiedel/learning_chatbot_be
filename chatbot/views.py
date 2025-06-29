@@ -10,16 +10,27 @@ from chatbot.services import ChatService
 from utils.wierd_json_parser import LenientJSONParser
 from .repositories import DjangoChatRepository
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
+class CompletionOut(serializers.Serializer):
+    id = serializers.IntegerField()
+    content = serializers.CharField()
+    created_at = serializers.DateTimeField()
 
 class ChatCompletionView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     http_method_names = ["post"]
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(request=CompletionIn, responses={200: dict})
+    @extend_schema(
+        request=CompletionIn,
+        responses={200: OpenApiResponse(response=CompletionOut)}
+    )
     def post(self, request):
-        flat_data = {k: v[0] if isinstance(v, list) else v for k, v in request.data.lists()}
+        flat_data = {
+            k: v[0] if isinstance(v, list) else v
+            for k, v in request.data.lists()
+        }
         ser = CompletionIn(data=flat_data)
         ser.is_valid(raise_exception=True)
 
