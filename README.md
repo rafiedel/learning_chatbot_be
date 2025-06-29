@@ -1,10 +1,12 @@
 # Learning Chatbot BE
-
-# URL Deployment
-BASEURL : https://learningchatbotbe-production.up.railway.app/
-SWAGGER : https://learningchatbotbe-production.up.railway.app/api/docs/
-
 _with_ **Django**
+
+# NEEDED INFORMATION
+DEPLOYMENT LINK : https://learningchatbotbe-production.up.railway.app/
+SWAGGER : https://learningchatbotbe-production.up.railway.app/api/docs/
+DUMMY DATA :
+- username : user1
+- password : password1
 
 ## Clean Architecture
 
