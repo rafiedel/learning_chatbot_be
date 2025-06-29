@@ -174,13 +174,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ───── Django basics ─────
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '192.168.1.7']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', "learningchatbotbe-production.up.railway.app",]
 
-# ───── CORS / CSRF ─────
-CORS_ALLOWED_ORIGINS = (
-    os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "")
-    .split(",") if os.getenv("DJANGO_CORS_ALLOWED_ORIGINS") else []
-)
+
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOW_CREDENTIALS = True
 # CSRF_COOKIE_SECURE = True
@@ -188,12 +184,12 @@ CORS_ALLOWED_ORIGINS = (
 # CSRF_COOKIE_SAMESITE = 'None'
 # SESSION_COOKIE_SAMESITE = 'None'
 
-# CSRF_TRUSTED_ORIGINS = [
-#     "https://sizopi-production.up.railway.app",
-#     "http://localhost:8000",
-#     "http://127.0.0.1:8000",
-#     "http://10.0.2.2:8000",
-# ]
+CSRF_TRUSTED_ORIGINS = [
+    "https://learningchatbotbe-production.up.railway.app",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://10.0.2.2:8000",
+]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
