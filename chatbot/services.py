@@ -1,10 +1,19 @@
 from dataclasses import asdict
 from typing import Any, List
 import base64
+from chatbot.models import ChatSummarize
 from clients.gemini_client import GeminiClient
 from clients.imgur_client import ImgurClient
 from .entities import Message, ChatThread
 from .repositories import DjangoChatRepository
+from .tasks import summarize_chat
+
+INTRODUCTION = """
+You are a personal learning assistant. Only answer questions that are educational in nature.
+If the question is not relevant to learning or education, politely decline to answer.
+Always respond using the same language the user used in their question.
+Format your answer in well-structured and clean **Markdown** for better readability.
+"""
 
 
 class ChatService:
@@ -36,12 +45,34 @@ class ChatService:
         content: str,
         image_data = None,
     ) -> dict[str, Any]:
+        final_prompt = INTRODUCTION + "\n\n Question:\n" + content
+        if session_id and session_id != 0:
+            summaries = ChatSummarize.objects.filter(session_id=session_id).order_by("created_at")
+            summary_texts = "\n\n".join(f"- {s.content}" for s in summaries)
+            if summary_texts:
+                final_prompt = f"""
+{INTRODUCTION}
+
+You have had previous conversations with this user. Here is the summary of those interactions:
+{summary_texts}
+
+Now, the next question is:
+{content}
+"""
+
         # 1) Call Gemini first using user message + image (if any)
-        formatted = self._to_gemini_format(content, image_data)
+        formatted = self._to_gemini_format(final_prompt, image_data)
         reply = GeminiClient.chat(formatted)
-        
+
         # 2) Find or create session
         thread = self.repo.get_or_create_thread(owner, session_id=session_id, title=content)
+
+        # Schedule background summary ==============================
+        summarize_chat.delay(
+            session_id=thread.id,
+            user_content=content,
+            assistant_content=reply.get("content", "" )
+        ) # Schedule background summary ==============================
 
         # 3) Save user message
         message_id = self.repo.add_user_message(thread.id, content=content)

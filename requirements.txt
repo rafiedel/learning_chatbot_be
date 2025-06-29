@@ -17,3 +17,5 @@ pillow
 djangorestframework-simplejwt
 httpx
 google-generativeai
+celery 
+redis

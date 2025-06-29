@@ -174,10 +174,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ───── Django basics ─────
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = (
-    os.getenv("DJANGO_ALLOWED_HOSTS", "")
-    .split(",") if os.getenv("DJANGO_ALLOWED_HOSTS") else []
-)
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '192.168.1.7']
 
 # ───── CORS / CSRF ─────
 CORS_ALLOWED_ORIGINS = (
@@ -199,3 +196,14 @@ CORS_ALLOWED_ORIGINS = (
 # ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+
+
+# Celery (Pararel Function Execution)
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"

@@ -13,25 +13,13 @@ class GeminiClient:
             - {'role': 'user'|'assistant', 'text': str}
             - {'role': 'user'|'assistant', 'image': {'mimeType': str, 'data': base64_str}}
         """
-        # Build contents list for generate_content
+        # print("DEBUG GeminiClient.chat received messages:", messages)
         try:
             contents = []
             for msg in messages:
                 # Text part
                 if msg.get('text'):
-                    final_message = f"""
-You are a personal learning assistant. Only answer questions that are educational in nature, such as those related to college courses or school subjects (elementary, middle, and high school).
-
-If the question is not relevant to learning or education, politely decline to answer.
-
-Always respond using the same language the user used in their question.
-
-Format your answer in well-structured and clean **Markdown** for better readability.
-
-Question:
-{msg.get('text')}
-"""
-                    contents.append(final_message)
+                    contents.append(msg.get('text'))
                 # Image part
                 if msg.get('image'):
                     img = msg['image']
@@ -48,4 +36,6 @@ Question:
             response = model.generate_content(contents=contents)
             return {"role": "assistant", "content": response.text}
         except Exception as e :
-            print(e)
+            print("❌ Exception in GeminiClient.chat:", e)
+            # Return an error response you can detect
+            return {"role": "assistant", "content": ""}

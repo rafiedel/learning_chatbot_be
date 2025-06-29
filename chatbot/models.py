@@ -31,4 +31,12 @@ class ChatMessage(models.Model):
         return f"{self.role}: {self.content[:30]}…"
     
     
+class ChatSummarize(models.Model):
+    session = models.ForeignKey(
+        ChatSession, on_delete=models.CASCADE, related_name="summaries"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Summary {self.pk} ({self.session_id})"
