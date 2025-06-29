@@ -74,12 +74,12 @@ Now, the next question is:
         # 2) Find or create session
         thread = self.repo.get_or_create_thread(owner, session_id=session_id, title=content)
 
-        # Schedule background summary ==============================
-        summarize_chat.delay(
-            session_id=thread.id,
-            user_content=content,
-            assistant_content=reply.get("content", "" )
-        ) # Schedule background summary ==============================
+        # # Schedule background summary ==============================
+        # summarize_chat.delay(
+        #     session_id=thread.id,
+        #     user_content=content,
+        #     assistant_content=reply.get("content", "" )
+        # ) # Schedule background summary ==============================
 
         # 3) Save user message
         message_id = self.repo.add_user_message(thread.id, content=content)
